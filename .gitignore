@@ -5,3 +5,4 @@ pyrightconfig.json
 __pycache__
 todo.db
 test_todo_review.db
+.mypy_cache
