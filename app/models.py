@@ -18,7 +18,7 @@ def _is_past_date(value: date) -> bool:
 
 
 class TodoBase(SQLModel):
-    title: str = Field(min_length=1, max_length=10)
+    title: str = Field(min_length=1, max_length=20, unique=True)
     target_date: date
     status: TodoStatus = Field(default=TodoStatus.PENDING)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -39,12 +39,17 @@ class TodoCreate(TodoBase):
     pass
 
 
-class TodoReplace(TodoBase):
-    pass
+class TodoIdOnly(SQLModel):
+    id: int
 
 
 class TodoUpdate(SQLModel):
-    model_config = {"extra": "forbid"}
+    model_config = {"extra": "ignore"}
+    """
+    It sets Pydantic's extra config option, which controls what happens when the input data has keys that aren't declared fields on the model.
+    Default ("ignore"): unknown keys in the request body are silently dropped.
+    "forbid": unknown keys raise a ValidationError (422).
+    """
 
     title: Optional[str] = Field(default=None, min_length=1, max_length=10)  # noqa: UP045
     target_date: Optional[date] = Field(default=None)  # noqa: UP045
@@ -57,3 +62,9 @@ class TodoUpdate(SQLModel):
         if value is not None and _is_past_date(value):
             raise ValueError("target_date must be today or a future date")
         return value
+
+
+class CustomException(Exception):
+    def __init__(self, status_code, detail):
+        self.status_code = status_code
+        self.detail = detail
