@@ -3,3 +3,5 @@
 .vscode/
 pyrightconfig.json
 __pycache__
+todo.db
+test_todo_review.db
