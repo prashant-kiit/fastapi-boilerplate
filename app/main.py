@@ -1,16 +1,20 @@
 import uuid
 from contextlib import asynccontextmanager
 
+import jwt
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from sqlalchemy.exc import IntegrityError
 from starlette import status
 
-from app.api.routes import todos
+from app.api.routes import auth, todos
 from app.core.config import settings
 from app.core.db import init_db
 from app.core.logger import logger, request_id_ctx
+from app.core.security import decode_access_token
 from app.models import CustomException
+
+PUBLIC_PATHS = {"/docs", "/openapi.json", "/redoc", "/auth/login"}
 
 
 @asynccontextmanager
@@ -32,11 +36,30 @@ async def handle_request_interception(request: Request, call_next):
     token = request_id_ctx.set(request.state.request_id)
     try:
         logger.info("Received request")
-        received_api_key = request.headers.get("x-api-key")
-        if received_api_key is None or received_api_key != settings.API_KEY:
-            return Response(
-                status_code=status.HTTP_401_UNAUTHORIZED, content="Not Allowed"
-            )
+        if request.url.path not in PUBLIC_PATHS:
+            auth_header = request.headers.get("authorization")
+            if not auth_header or not auth_header.startswith("Bearer "):
+                return Response(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content="Missing or invalid Authorization header",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            jwt_token = auth_header.removeprefix("Bearer ").strip()
+            try:
+                payload = decode_access_token(jwt_token)
+            except jwt.ExpiredSignatureError:
+                return Response(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content="Token expired",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            except jwt.InvalidTokenError:
+                return Response(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content="Invalid token",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            request.state.user_id = payload["sub"]
         response = await call_next(request)
         response.headers["x-request-id"] = request.state.request_id
         logger.info("Sent request")
@@ -84,4 +107,5 @@ def handle_custom_exception(request: Request, exc: CustomException):
     raise HTTPException(status_code=exc.status_code, detail=exc.detail)
 
 
+app.include_router(auth.router)
 app.include_router(todos.router)

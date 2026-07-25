@@ -2,6 +2,7 @@ annotated-doc==0.0.4
 annotated-types==0.8.0
 anyio==4.14.2
 ast_serialize==0.6.0
+bcrypt==5.0.0
 cfgv==3.5.0
 click==8.4.2
 distlib==0.4.3
@@ -22,6 +23,8 @@ pydantic-settings==2.14.2
 pydantic_core==2.46.4
 python-discovery==1.5.0
 python-dotenv==1.2.2
+python-multipart==0.0.32
+PyJWT==2.13.0
 PyYAML==6.0.3
 ruff==0.16.0
 SQLAlchemy==2.0.51
