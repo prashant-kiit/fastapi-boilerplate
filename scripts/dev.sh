@@ -3,5 +3,8 @@
 set -e
 set -x
 
-uvicorn app.main:app --port 8081 --reload
+export ENV_FILE="${ENV_FILE:-.env.local}"
+source "$ENV_FILE"
+
+uvicorn app.main:app --host "$HOST" --port "$PORT" --reload
 

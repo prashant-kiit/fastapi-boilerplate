@@ -1,7 +1,9 @@
 from fastapi import Request
 from sqlmodel import Session, SQLModel, create_engine
 
-engine = create_engine("sqlite:///./todo.db")
+from app.core.config import settings
+
+engine = create_engine(settings.DATABASE_URL)
 
 
 def init_db():
