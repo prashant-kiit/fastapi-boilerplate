@@ -1,0 +1,16 @@
+.venv
+.git
+.mypy_cache
+.ruff_cache
+.vscode
+__pycache__
+*.pyc
+*.db
+log.txt
+.env.local
+.env.prod
+interview-questions
+Dockerfile
+.dockerignore
+README.md
+requirements-dev.txt
