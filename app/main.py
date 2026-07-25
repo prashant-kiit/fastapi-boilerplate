@@ -10,7 +10,6 @@ from starlette import status
 
 from app.api.routes import auth, todos
 from app.core.config import settings
-from app.core.db import init_db
 from app.core.logger import logger, request_id_ctx
 from app.core.security import decode_access_token
 from app.models import CustomException
@@ -23,7 +22,6 @@ async def lifespan(app: FastAPI):
     logger.info(
         f"FastAPI Todo App is running at env {settings.ENVIRONMENT} at host {settings.HOST} and port {settings.PORT}"
     )
-    init_db()
     yield
     # anything here runs on exit — this is "shutdown"
 

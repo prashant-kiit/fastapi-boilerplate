@@ -4,6 +4,8 @@
 #
 #    pip-compile --output-file=requirements.txt pyproject.toml
 #
+alembic==1.18.5
+    # via fastapi-boilerplate (pyproject.toml)
 annotated-doc==0.0.4
     # via fastapi
 annotated-types==0.8.0
@@ -20,6 +22,10 @@ h11==0.16.0
     # via uvicorn
 idna==3.18
     # via anyio
+mako==1.3.12
+    # via alembic
+markupsafe==3.0.3
+    # via mako
 pydantic==2.13.4
     # via
     #   fastapi
@@ -40,6 +46,7 @@ python-multipart==0.0.32
     # via fastapi-boilerplate (pyproject.toml)
 sqlalchemy==2.0.51
     # via
+    #   alembic
     #   fastapi-boilerplate (pyproject.toml)
     #   sqlmodel
 sqlmodel==0.0.39
@@ -50,6 +57,7 @@ starlette==1.3.1
     #   fastapi-boilerplate (pyproject.toml)
 typing-extensions==4.16.0
     # via
+    #   alembic
     #   fastapi
     #   pydantic
     #   pydantic-core
