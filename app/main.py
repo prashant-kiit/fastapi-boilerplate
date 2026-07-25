@@ -1,6 +1,7 @@
+import uuid
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from sqlalchemy.exc import IntegrityError
 from starlette import status
@@ -23,6 +24,19 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="FastAPI Todo App", lifespan=lifespan)
+
+
+@app.middleware("http")
+async def handle_request_interception(request: Request, call_next):
+    request.state.request_id = str(uuid.uuid4())
+    logger.info(f"Received request {request.state.request_id}")
+    received_api_key = request.headers.get("x-api-key")
+    if received_api_key is None or received_api_key != settings.API_KEY:
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED, content="Not Allowed")
+    response = await call_next(request)
+    response.headers["x-request-id"] = request.state.request_id
+    logger.info(f"Sent request {request.state.request_id}")
+    return response
 
 
 @app.exception_handler(RequestValidationError)

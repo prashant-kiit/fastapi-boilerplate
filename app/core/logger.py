@@ -3,8 +3,8 @@ import logging
 from app.core.config import ENV_FILE
 
 logging.basicConfig(
-    level=logging.INFO if ENV_FILE == "prod" else logging.DEBUG,
-    format="%(levelname)s:     %(message)s | %(asctime)s",
+    level=logging.INFO if ENV_FILE == ".env.prod" else logging.DEBUG,
+    format="%(levelname)s:     %(message)s | %(asctime)s %(request_id)s",
     datefmt="%Y-%m-%dT%H:%M:%S",
 )
 

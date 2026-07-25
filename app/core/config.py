@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: str = "8081"
     DATABASE_URL: str = "sqlite:///./todo.db"
+    API_KEY: str = "fake-api-key"
 
 
 settings = Settings()
