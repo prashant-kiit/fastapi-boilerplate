@@ -4,6 +4,7 @@ from fastapi import APIRouter, status
 from sqlmodel import col, select
 
 from app.api.deps import SessionDep
+from app.core.logger import logger
 from app.models import (
     CustomException,
     Todo,
@@ -68,6 +69,7 @@ def create_todo(todo: TodoCreate, session: SessionDep):
     db_todo = Todo.model_validate(todo)
     session.add(db_todo)
     session.commit()
+    logger.info(f"Todo created id {db_todo.id}")
     session.refresh(db_todo)
     return db_todo
 
@@ -82,6 +84,7 @@ def update_todo(todo_id: int, todo: TodoUpdate, session: SessionDep):
     db_todo.sqlmodel_update(todo.model_dump())
     session.add(db_todo)
     session.commit()
+    logger.info(f"Todo updated id {db_todo.id}")
     session.refresh(db_todo)
 
 
@@ -94,3 +97,4 @@ def delete_todo(todo_id: int, session: SessionDep):
         )
     session.delete(db_todo)
     session.commit()
+    logger.info(f"Todo deleted id {db_todo.id}")
