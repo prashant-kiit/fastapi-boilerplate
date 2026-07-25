@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from enum import Enum
 from typing import Optional
 
@@ -14,14 +14,14 @@ class TodoStatus(Enum):
 
 
 def _is_past_date(value: date) -> bool:
-    return value < datetime.now(timezone.utc).date()
+    return value < datetime.now(UTC).date()
 
 
 class TodoBase(SQLModel):
     title: str = Field(min_length=1, max_length=20, unique=True)
     target_date: date
     status: TodoStatus = Field(default=TodoStatus.PENDING)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @field_validator("target_date")
     @classmethod
