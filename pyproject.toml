@@ -1,0 +1,6 @@
+[tool.mypy]
+python_executable = ".venv/bin/python"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
