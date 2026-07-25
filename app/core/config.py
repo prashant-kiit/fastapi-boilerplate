@@ -24,6 +24,16 @@ class Settings(BaseSettings):
     DEMO_PASSWORD_HASH: str = (
         "$2b$12$0gbkjlfhPIcyUs6pDDmSpugThlWl8r7ZIAbItlcuSvLkwgZnxVAmC"
     )
+    # Comma-separated list of allowed origins, e.g. "http://localhost:3000,https://example.com"
+    BACKEND_CORS_ORIGINS: str = "http://localhost:3000"
+
+    @property
+    def cors_origins(self) -> list[str]:
+        return [
+            origin.strip()
+            for origin in self.BACKEND_CORS_ORIGINS.split(",")
+            if origin.strip()
+        ]
 
 
 settings = Settings()

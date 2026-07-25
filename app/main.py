@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 import jwt
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
 from starlette import status
 
@@ -28,6 +29,14 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="FastAPI Todo App", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.middleware("http")
