@@ -85,6 +85,12 @@ def update_todo(todo_id: int, todo: TodoUpdate, session: SessionDep):
     session.refresh(db_todo)
 
 
-@router.delete("/{todo_id}")
+@router.delete("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_todo(todo_id: int, session: SessionDep):
-    pass
+    db_todo = session.get(Todo, todo_id)
+    if not db_todo:
+        raise CustomException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found"
+        )
+    session.delete(db_todo)
+    session.commit()
