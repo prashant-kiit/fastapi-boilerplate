@@ -1,11 +1,22 @@
+import contextvars
 import logging
 
 from app.core.config import ENV_FILE
 
+request_id_ctx = contextvars.ContextVar("request_id", default="-")
+
+
+class RequestIdFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        record.request_id = request_id_ctx.get()
+        return True
+
+
 logging.basicConfig(
     level=logging.INFO if ENV_FILE == ".env.prod" else logging.DEBUG,
-    format="%(levelname)s:     %(message)s | %(asctime)s %(request_id)s",
+    format="%(levelname)s:     %(request_id)s | %(message)s | %(asctime)s",
     datefmt="%Y-%m-%dT%H:%M:%S",
 )
 
 logger = logging.getLogger("fastapi-todo-app-logger")
+logger.addFilter(RequestIdFilter())

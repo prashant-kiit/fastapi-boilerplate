@@ -9,7 +9,7 @@ from starlette import status
 from app.api.routes import todos
 from app.core.config import settings
 from app.core.db import init_db
-from app.core.logger import logger
+from app.core.logger import logger, request_id_ctx
 from app.models import CustomException
 
 
@@ -29,14 +29,20 @@ app = FastAPI(title="FastAPI Todo App", lifespan=lifespan)
 @app.middleware("http")
 async def handle_request_interception(request: Request, call_next):
     request.state.request_id = str(uuid.uuid4())
-    logger.info(f"Received request {request.state.request_id}")
-    received_api_key = request.headers.get("x-api-key")
-    if received_api_key is None or received_api_key != settings.API_KEY:
-        return Response(status_code=status.HTTP_401_UNAUTHORIZED, content="Not Allowed")
-    response = await call_next(request)
-    response.headers["x-request-id"] = request.state.request_id
-    logger.info(f"Sent request {request.state.request_id}")
-    return response
+    token = request_id_ctx.set(request.state.request_id)
+    try:
+        logger.info("Received request")
+        received_api_key = request.headers.get("x-api-key")
+        if received_api_key is None or received_api_key != settings.API_KEY:
+            return Response(
+                status_code=status.HTTP_401_UNAUTHORIZED, content="Not Allowed"
+            )
+        response = await call_next(request)
+        response.headers["x-request-id"] = request.state.request_id
+        logger.info("Sent request")
+        return response
+    finally:
+        request_id_ctx.reset(token)
 
 
 @app.exception_handler(RequestValidationError)

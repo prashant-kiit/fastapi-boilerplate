@@ -1,6 +1,6 @@
 from datetime import date
 
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, status
 from sqlmodel import col, select
 
 from app.api.deps import SessionDep
@@ -18,11 +18,11 @@ router = APIRouter(prefix="/todos", tags=["todos"])
 
 
 @router.get("/", response_model=list[Todo], status_code=status.HTTP_200_OK)
-def get_todos(request: Request, session: SessionDep):
+def get_todos(session: SessionDep):
     db_todos = session.exec(
         select(Todo).order_by(col(Todo.target_date)).limit(10)
     ).all()
-    logger.info("Fetched Todos", extra={"request_id": request.state.request_id})
+    logger.info("Fetched Todos")
     return db_todos
 
 
