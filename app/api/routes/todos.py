@@ -1,9 +1,10 @@
 from datetime import date
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Request, status
 from sqlmodel import col, select
 
 from app.api.deps import SessionDep
+from app.core.limiter import limiter
 from app.core.logger import logger
 from app.models import (
     CustomException,
@@ -18,7 +19,8 @@ router = APIRouter(prefix="/todos", tags=["todos"])
 
 
 @router.get("/", response_model=list[Todo], status_code=status.HTTP_200_OK)
-def get_todos(session: SessionDep):
+@limiter.limit("10/minute")
+def get_todos(request: Request, session: SessionDep):
     db_todos = session.exec(
         select(Todo).order_by(col(Todo.target_date)).limit(10)
     ).all()

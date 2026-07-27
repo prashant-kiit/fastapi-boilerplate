@@ -5,11 +5,14 @@ import jwt
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi.errors import RateLimitExceeded
 from sqlalchemy.exc import IntegrityError
 from starlette import status
 
 from app.api.routes import auth, todos
 from app.core.config import settings
+from app.core.limiter import limiter
 from app.core.logger import logger, request_id_ctx
 from app.core.security import decode_access_token
 from app.models import CustomException
@@ -45,6 +48,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.state.limiter = limiter
 
 app.add_middleware(
     CORSMiddleware,
@@ -130,6 +134,18 @@ def handle_integrity_error(request: Request, exc: IntegrityError):
 def handle_custom_exception(request: Request, exc: CustomException):
     logger.exception(exc.detail)
     raise HTTPException(status_code=exc.status_code, detail=exc.detail)
+
+
+@app.exception_handler(RateLimitExceeded)
+def handle_rate_limit_exceeded(request: Request, exc: RateLimitExceeded):
+    logger.warning(f"Rate limit exceeded: {exc.detail}")
+    response = JSONResponse(
+        {"error": f"Rate limit exceeded: {exc.detail}"},
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+    )
+    return request.app.state.limiter._inject_headers(
+        response, request.state.view_rate_limit
+    )
 
 
 app.include_router(auth.router)
