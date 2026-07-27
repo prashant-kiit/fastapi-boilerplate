@@ -20,7 +20,7 @@ PUBLIC_PATHS = {"/docs", "/openapi.json", "/redoc", "/auth/login"}
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info(
-        f"FastAPI Todo App is running at env {settings.ENVIRONMENT} at host {settings.HOST} and port {settings.PORT}"
+        f"FastAPI Todo App is running at env {settings.ENVIRONMENT} at host http://{settings.HOST}:{settings.PORT}/v1"
     )
     yield
     # anything here runs on exit — this is "shutdown"
@@ -29,7 +29,22 @@ async def lifespan(app: FastAPI):
     )
 
 
-app = FastAPI(title="FastAPI Todo App", lifespan=lifespan)
+async def on_startup_event():
+    logger.info("Started")
+
+
+async def on_shutdown_event():
+    logger.info("Shut down")
+
+
+app = FastAPI(
+    title="FastAPI Todo App",
+    root_path="/v1",
+    on_startup=[on_startup_event],
+    on_shutdown=[on_shutdown_event],
+    lifespan=lifespan,
+)
+
 
 app.add_middleware(
     CORSMiddleware,
