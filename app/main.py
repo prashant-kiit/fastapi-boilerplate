@@ -24,6 +24,9 @@ async def lifespan(app: FastAPI):
     )
     yield
     # anything here runs on exit — this is "shutdown"
+    logger.info(
+        f"FastAPI Todo App shut down at env {settings.ENVIRONMENT} at host {settings.HOST} and port {settings.PORT}"
+    )
 
 
 app = FastAPI(title="FastAPI Todo App", lifespan=lifespan)
